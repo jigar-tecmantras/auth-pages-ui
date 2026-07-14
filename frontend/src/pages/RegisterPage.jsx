@@ -1,12 +1,14 @@
 import React, { useMemo, useState } from 'react';
 
 const emailRegex = /^[\w.%+-]+@[\w.-]+\.[A-Za-z]{2,}$/;
+const phoneRegex = /^\d{10,15}$/;
 
 const RegisterPage = ({ onSwitch, onSubmit }) => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [phone, setPhone] = useState('');
   const [touched, setTouched] = useState({});
 
   const errors = useMemo(() => {
@@ -18,6 +20,10 @@ const RegisterPage = ({ onSwitch, onSubmit }) => {
 
     if (touched.email && !emailRegex.test(email)) {
       errs.email = 'Please enter a valid email address.';
+    }
+
+    if (touched.phone && !phoneRegex.test(phone)) {
+      errs.phone = 'Please enter a valid phone number.';
     }
 
     if (touched.password && password.length < 8) {
@@ -36,6 +42,10 @@ const RegisterPage = ({ onSwitch, onSubmit }) => {
       errs.email = 'Email is required.';
     }
 
+    if (!phone && touched.phone) {
+      errs.phone = 'Phone number is required.';
+    }
+
     if (!password && touched.password) {
       errs.password = 'Password is required.';
     }
@@ -45,22 +55,29 @@ const RegisterPage = ({ onSwitch, onSubmit }) => {
     }
 
     return errs;
-  }, [fullName, email, password, confirmPassword, touched]);
+  }, [fullName, email, password, confirmPassword, phone, touched]);
 
   const isFormValid = useMemo(() => {
     return (
       fullName.trim().length >= 2 &&
       emailRegex.test(email) &&
+      phoneRegex.test(phone) &&
       password.length >= 8 &&
       confirmPassword === password &&
       email.length > 0 &&
       confirmPassword.length > 0
     );
-  }, [fullName, email, password, confirmPassword]);
+  }, [fullName, email, phone, password, confirmPassword]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    setTouched({ fullName: true, email: true, password: true, confirmPassword: true });
+    setTouched({
+      fullName: true,
+      email: true,
+      phone: true,
+      password: true,
+      confirmPassword: true,
+    });
 
     if (!isFormValid) return;
 
@@ -105,6 +122,24 @@ const RegisterPage = ({ onSwitch, onSubmit }) => {
           aria-invalid={Boolean(errors.email)}
         />
         {errors.email && <p className="input-error" role="alert">{errors.email}</p>}
+      </div>
+
+      <div className="input-group">
+        <label className={labelClasses('phone')} htmlFor="signup-phone">
+          Phone number
+        </label>
+        <input
+          id="signup-phone"
+          name="phone"
+          type="tel"
+          value={phone}
+          onChange={(event) => setPhone(event.target.value)}
+          onBlur={() => setTouched((prev) => ({ ...prev, phone: true }))}
+          className={`input-field ${errors.phone ? 'input-error-field' : ''}`}
+          placeholder="1234567890"
+          aria-invalid={Boolean(errors.phone)}
+        />
+        {errors.phone && <p className="input-error" role="alert">{errors.phone}</p>}
       </div>
 
       <div className="input-group">
